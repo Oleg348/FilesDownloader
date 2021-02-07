@@ -16,9 +16,9 @@ public interface FilesURLsProvider {
     /**
      * Set file that contains URLs.
      * @param path
-     * @throws InvalidPathException if @param path is null.
+     * @throws IllegalArgumentException if @param path is null or invalid.
      */
-    void setFilePath(String path) throws InvalidPathException;
+    void setFilePath(String path) throws IllegalArgumentException;
 
     /**
      * Set file that contains URLs.

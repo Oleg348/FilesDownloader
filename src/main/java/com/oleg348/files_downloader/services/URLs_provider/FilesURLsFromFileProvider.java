@@ -17,8 +17,7 @@ public class FilesURLsFromFileProvider implements FilesURLsProvider {
     }
 
     @Override
-    public void setFilePath(String path) throws InvalidPathException {
-        // TODO Auto-generated method stub
+    public void setFilePath(String path) throws IllegalArgumentException {
 
     }
 
