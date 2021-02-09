@@ -12,6 +12,7 @@ import com.oleg348.files_downloader.services.downloader.FileDownloadingCallback;
 import com.oleg348.files_downloader.services.downloader.ThrottlingFileDownloader;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.FileUrlResource;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -41,18 +42,35 @@ public class FilesDownloaderModelImpl implements FilesDownloaderModel {
         return new Semaphore(permits, true);
     }
 
-    private void runDownloadThread(
-        URL fileUrl,
-        int maxDownloadSpeed,
-        Path savePath,
-        FileDownloadingCallback callback
-    ) {
+    private FileDownloadingCallback getWrappedCallback(FileDownloadingCallback callback) {
+        return new FileDownloadingCallback() {
+
+            @Override
+            public void onDownloadStateChange(URL fileUrl, long newSpeed, long downloadedSize, long totalSize) {
+                callback.onDownloadStateChange(fileUrl, newSpeed, downloadedSize, totalSize);
+            }
+
+            @Override
+            public void onFinished(URL fileUrl, Path filePath) {
+                callback.onFinished(fileUrl, filePath);
+                semaphore.release();
+            }
+
+            @Override
+            public void onError(URL fileUrl, String errorMessage) {
+                callback.onError(fileUrl, errorMessage);
+                semaphore.release();
+            }
+        };
+    }
+
+    private void runDownloadThread(URL fileUrl, int maxDownloadSpeed, Path savePath, FileDownloadingCallback callback) {
         new Thread(new Runnable() {
             @Override
             public void run() {
                 fileDownloader.startDownloading(fileUrl,
                         Paths.get(savePath.toString(), Paths.get(fileUrl.getPath()).getFileName().toString()),
-                        maxDownloadSpeed, callback);
+                        maxDownloadSpeed, getWrappedCallback(callback));
             }
         }).start();
     }
@@ -86,6 +104,9 @@ public class FilesDownloaderModelImpl implements FilesDownloaderModel {
 
     @Override
     public void setFilesLoadingPath(String dirPath) throws IllegalArgumentException {
+        if (dirPath == null)
+            throw new IllegalArgumentException("dirPath can't be null");
+            
         Path path = Paths.get(dirPath);
         if (!path.toFile().isDirectory()) {
             throw new IllegalArgumentException("Provided downloading path must be a directory");
@@ -96,10 +117,15 @@ public class FilesDownloaderModelImpl implements FilesDownloaderModel {
 
     @Override
     public void startDownloading(FileDownloadingCallback callback) throws IllegalStateException {
+        if (filesURLs == null)
+            throw new IllegalStateException("loadFilesURLs wasn't called");
+
         for (URL url : filesURLs) {
             try {
                 semaphore.acquire();
-            } catch (InterruptedException e) { }
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
 
             runDownloadThread(url, maxDownloadSpeed, filesLoadingPath, callback);
         }
