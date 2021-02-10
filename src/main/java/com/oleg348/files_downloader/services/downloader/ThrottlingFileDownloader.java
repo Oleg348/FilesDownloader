@@ -9,7 +9,7 @@ public interface ThrottlingFileDownloader {
      * 
      * @param fileUrl file URL to download from.
      * @param downloadedFilePath File path to save.
-     * @param maxSpeed Max download speed in bytes.
+     * @param maxSpeed Max download speed in KB/s.
      * @param callback callback.
      * @throws IllegalArgumentException If
      * <p>
@@ -17,7 +17,7 @@ public interface ThrottlingFileDownloader {
      * <p>
      * {@code downloadedFilePath} is null;
      * <p>
-     * {@code maxSpeed} is less than 1 byte;
+     * {@code maxSpeed} is less than 1;
      * <p>
      * {@code callback} is null;
      */
