@@ -1,7 +1,6 @@
 package com.oleg348.files_downloader.services.URLs_provider;
 
 import java.net.URL;
-import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.List;
 

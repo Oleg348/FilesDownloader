@@ -12,7 +12,6 @@ import com.oleg348.files_downloader.services.downloader.FileDownloadingCallback;
 import com.oleg348.files_downloader.services.downloader.ThrottlingFileDownloader;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.FileUrlResource;
 import org.springframework.stereotype.Component;
 
 @Component
